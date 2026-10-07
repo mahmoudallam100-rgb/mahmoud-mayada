@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>دعوة زفاف | محمود & ميادة</title>
-<meta name="description" content="فرحتنا مش هتكمل غير بحضوركم — السبت ٧ نوفمبر ٢٠٢٦ — دار ضباط المدرعات">
+<meta name="description" content="فرحتنا مش هتكمل غير بحضوركم — السبت ٧ نوفمبر ٢٠٢٦ — دار ضباط المدرعات، فندق الفرسان، قاعة الجوهرة">
 <meta property="og:title" content="دعوة زفاف محمود & ميادة">
 <meta property="og:description" content="فرحتنا مش هتكمل غير بحضوركم — السبت ٧ نوفمبر ٢٠٢٦ الساعة ٧ مساءً">
 <meta name="theme-color" content="#090705">
@@ -255,6 +255,13 @@ p.lead{font-size:18px;line-height:2;color:var(--ink);margin:0;max-width:420px}
 .venueIcon .draw{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 2.4s cubic-bezier(.6,0,.2,1)}
 .rv.in .venueIcon .draw{stroke-dashoffset:0}
 .venueName{font-family:'Aref Ruqaa',serif;font-size:clamp(34px,10.5vw,48px);margin:6px 0 4px}
+.venueSub{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.venueSub .vs{font-size:19px;font-weight:600;color:var(--ink)}
+.venueSub .dot{width:7px;height:7px;transform:rotate(45deg);background:var(--g3);box-shadow:0 0 8px rgba(245,217,139,.7)}
+.hallName{display:inline-block;margin-top:14px;padding:10px 26px;border:1px solid rgba(212,175,55,.5);border-radius:40px;background:linear-gradient(135deg,rgba(249,231,168,.12),rgba(169,126,28,.12));font-family:'Aref Ruqaa',serif;font-size:clamp(26px,8vw,34px);position:relative}
+.hallName::before,.hallName::after{content:"";position:absolute;top:50%;width:26px;height:1px;background:linear-gradient(90deg,transparent,var(--g2))}
+.hallName::before{right:100%;margin-right:8px;transform:scaleX(-1)}
+.hallName::after{left:100%;margin-left:8px}
 .btnRow{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:24px}
 .btn{position:relative;display:inline-flex;align-items:center;gap:9px;padding:14px 24px;border-radius:40px;font-size:16px;font-weight:600;text-decoration:none;cursor:pointer;border:0;overflow:hidden;transition:transform .2s}
 .btn:active{transform:scale(.96)}
@@ -523,6 +530,8 @@ footer{padding:70px 30px 210px;text-align:center;position:relative;z-index:3}
     </div>
     <div class="kicker rv" style="--d:.1s">المكان</div>
     <h2 class="venueName gold glow rv" style="--d:.2s">دار ضباط المدرعات</h2>
+    <div class="venueSub rv" style="--d:.28s"><span class="vs">فندق الفرسان</span></div>
+    <div class="rv zoom" style="--d:.36s"><span class="hallName"><span class="gold">قاعة الجوهرة</span></span></div>
     <svg class="divider rv" viewBox="0 0 220 24"><line x1="0" y1="12" x2="95" y2="12"/><line x1="125" y1="12" x2="220" y2="12"/><path class="dd" d="M110 3 l9 9 l-9 9 l-9 -9z"/></svg>
     <p class="lead rv" style="--d:.3s">السبت ٧ نوفمبر ٢٠٢٦ — الساعة ٧ مساءً</p>
     <div class="btnRow rv" style="--d:.45s">
@@ -615,8 +624,8 @@ var CFG = {
   // لينك الـ Web app — بيُستخدم لما الدعوة تتفتح من GitHub (برّه Apps Script)
   API_URL: 'https://script.google.com/macros/s/AKfycbzMRU0yHv0ylP-e7r3A5Qi8mZE53NIYSy1ygm319TxdLhGso34R5EXa3XeesxdwWxeg/exec',
   INTRO_SECONDS: 5,
-  MAP_URL: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('دار ضباط المدرعات'),
-  VENUE: 'دار ضباط المدرعات'
+  MAP_URL: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('فندق الفرسان دار ضباط المدرعات'),
+  VENUE: 'قاعة الجوهرة - فندق الفرسان - دار ضباط المدرعات'
 };
 
 /* ======================== HELPERS ======================== */
