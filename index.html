@@ -672,6 +672,9 @@ var CFG = {
   WEDDING_ISO: '2026-11-07T19:00:00+02:00',   // ٧ نوفمبر ٢٠٢٦ الساعة ٧ مساءً بتوقيت القاهرة
   VIDEO_ID: '1ukUVRB8XyQR2FRTgyrEnVZF-T-hki6fp',
   SONG_ID:  '1BUYKM3F3v9U6MUnILAKu1YRM5zDGC9m-',
+  // ارفع الملفين دول جنب index.html على GitHub بنفس الاسم بالظبط
+  SONG_FILE:  'song.mp3',
+  VIDEO_FILE: 'video.mp4',
   // لينك الـ Web app — بيُستخدم لما الدعوة تتفتح من GitHub (برّه Apps Script)
   API_URL: 'https://script.google.com/macros/s/AKfycbzMRU0yHv0ylP-e7r3A5Qi8mZE53NIYSy1ygm319TxdLhGso34R5EXa3XeesxdwWxeg/exec',
   INTRO_SECONDS: 5,
@@ -701,6 +704,14 @@ function viaScript(id){
         .then(function(r){ if(!r||!r.data) throw new Error('no media'); res(b64ToUrl(r)); }).catch(rej);
     } else rej('no api');
   });
+}
+// الأفضل: الملف مرفوع جنب index.html على GitHub (سريع ويشتغل على كل الموبايلات)
+// لو مش موجود: نجرب Drive، وبعدها Apps Script
+function attachLocalFirst(el,localUrl,id,timeoutMs){
+  return fetch(localUrl,{method:'HEAD',cache:'no-store'}).then(function(r){
+    if(!r.ok) throw 0;
+    el.src=localUrl; el.load(); return true;
+  }).catch(function(){ return attachMedia(el,id,timeoutMs); });
 }
 function attachMedia(el,id,timeoutMs){
   return new Promise(function(resolve){
@@ -758,8 +769,8 @@ addEventListener('pointerdown',function(e){Dust.burst(e.clientX,e.clientY,18)},{
 /* ======================== MEDIA PRELOAD ======================== */
 var vid=$('#vid'), song=$('#song'), vLayer=$('#vLayer');
 var videoReady=false;
-attachMedia(vid,CFG.VIDEO_ID,9000).then(function(ok){videoReady=ok; if(!ok) vLayer.classList.add('novideo');});
-attachMedia(song,CFG.SONG_ID,8000);
+attachLocalFirst(vid,CFG.VIDEO_FILE,CFG.VIDEO_ID,9000).then(function(ok){videoReady=ok; if(!ok) vLayer.classList.add('novideo');});
+attachLocalFirst(song,CFG.SONG_FILE,CFG.SONG_ID,8000);
 
 /* ======================== GATE → INTRO ======================== */
 var opened=false;
@@ -1047,8 +1058,8 @@ document.addEventListener('visibilitychange',function(){
 (function(){
   var lt=$('#loadTxt'), n=0, iv=setInterval(function(){
     if(opened){clearInterval(iv);lt.textContent='';return;}
-    if(vid.readyState>=2){lt.textContent='';clearInterval(iv);return;}
-    n=(n+1)%4; lt.textContent='جاري تجهيز الدعوة'+'.'.repeat(n);
+    if(vid.readyState>=2||n>12){lt.textContent='';clearInterval(iv);return;}
+    n++; lt.textContent='جاري تجهيز الدعوة'+'.'.repeat(n%4);
   },500);
 })();
 </script>
