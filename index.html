@@ -177,7 +177,8 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opa
 .seal .halo.h2{animation-delay:1.1s}
 @keyframes pulse{50%{transform:scale(1.06)}}
 @keyframes halo{from{transform:scale(.8);opacity:1}to{transform:scale(1.55);opacity:0}}
-.tapTxt{margin-top:16px;font-size:16px;color:var(--g2);animation:blink 2s ease-in-out infinite}
+.tapTxt{display:inline-block;margin-top:16px;font-family:inherit;font-size:18px;font-weight:700;color:#2a1d05;background:linear-gradient(135deg,#f9e7a8,#d4af37 50%,#a97e1c);border:0;border-radius:40px;padding:12px 30px;cursor:pointer;box-shadow:0 8px 26px rgba(212,175,55,.4);animation:tapPulse 2s ease-in-out infinite}
+@keyframes tapPulse{50%{transform:scale(1.05);box-shadow:0 8px 34px rgba(245,217,139,.65)}}
 @keyframes blink{50%{opacity:.45}}
 .gateInner{width:100%;max-width:460px;padding:22px 20px;transform-origin:center center}
 .gVerse{position:relative;padding:30px 18px 20px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(26,19,9,.82),rgba(10,7,4,.82));opacity:0;transform:scale(.92);animation:vIn 1.4s .2s cubic-bezier(.2,.8,.2,1) forwards;cursor:pointer}
@@ -483,7 +484,7 @@ footer{padding:70px 30px 150px;text-align:center;position:relative;z-index:3}
       <span class="halo"></span><span class="halo h2"></span>
       <span class="disc"><span>م م</span></span>
     </button>
-    <div class="tapTxt">اضغط على الختم لفتح الدعوة</div>
+    <button class="tapTxt" id="tapTxt" type="button">اضغط هنا لفتح الدعوة</button>
     <div class="loadTxt" id="loadTxt"></div>
     </div>
   </div>
@@ -667,6 +668,7 @@ footer{padding:70px 30px 150px;text-align:center;position:relative;z-index:3}
 var CFG = {
   // اكتب أسماء العائلتين هنا (لو سبتهم فاضيين هتظهر صيغة عامة)
   GROOM_FAMILY: 'الأستاذ / أحمد محمد علام',          // والد العريس
+  GROOM_FAMILY_2: 'مهندس / محمد أحمد علام',
   BRIDE_FAMILY: 'الأستاذ / عادل عبد المقصود عمار',   // والد العروسة
   WEDDING_ISO: '2026-11-07T19:00:00+02:00',   // ٧ نوفمبر ٢٠٢٦ الساعة ٧ مساءً بتوقيت القاهرة
   VIDEO_ID: '1ukUVRB8XyQR2FRTgyrEnVZF-T-hki6fp',
@@ -762,10 +764,10 @@ attachMedia(song,CFG.SONG_ID,8000);
 
 /* ======================== GATE → INTRO ======================== */
 var opened=false;
-$('#openBtn').addEventListener('click',function(){
+function openInvite(srcEl){
   if(opened) return; opened=true;
   if(navigator.vibrate) try{navigator.vibrate(35)}catch(e){}
-  var r=this.getBoundingClientRect(); Dust.burst(r.left+r.width/2,r.top+r.height/2,60);
+  var r=(srcEl||$('#openBtn')).getBoundingClientRect(); Dust.burst(r.left+r.width/2,r.top+r.height/2,60);
   var fl=$('#flash'); fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go');
   startSong();
   $('#gate').classList.add('open');
@@ -773,16 +775,31 @@ $('#openBtn').addEventListener('click',function(){
   playVideo();
   runIntro();
   setTimeout(function(){$('#gate').style.display='none'},2000);
-});
+}
+$('#openBtn').addEventListener('click',function(){openInvite(this)});
+$('#tapTxt').addEventListener('click',function(){openInvite(this)});
 
+var SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
 function startSong(){
   song.volume=0;
+  if(song.readyState<2){
+    // الأغنية لسه بتتحمّل: نفتح إذن الصوت دلوقتي بلمسة المستخدم، ونشغّلها أول ما توصل
+    var real=song.currentSrc||song.src;
+    try{ var u=new Audio(SILENT); u.play().catch(function(){}); }catch(e){}
+  }
   var p=song.play();
   if(p&&p.catch) p.catch(function(){ $('#music').classList.add('off'); });
   var v=0, iv=setInterval(function(){v+=.04; song.volume=Math.min(v,.85); if(v>=.85) clearInterval(iv);},120);
   $('#music').classList.add('show');
   // لو الأغنية جت متأخر من الاحتياطي
   song.addEventListener('canplay',function(){ if(song.paused && !$('#music').classList.contains('userOff')) song.play().then(function(){$('#music').classList.remove('off')}).catch(function(){}); },{once:true});
+  // محاولة متكررة لمدة 25 ثانية لو الأغنية اتأخرت في التحميل
+  var tries=0, rt=setInterval(function(){
+    tries++; var m=$('#music');
+    if(m.classList.contains('userOff')||tries>25){clearInterval(rt);return;}
+    if(!song.paused){m.classList.remove('off');clearInterval(rt);return;}
+    if(song.readyState>=2) song.play().then(function(){m.classList.remove('off')}).catch(function(){});
+  },1000);
 }
 function playVideo(){
   try{vid.currentTime=0}catch(e){}
@@ -816,7 +833,7 @@ function runIntro(){
 (function(){
   var f=$('#familyTxt');
   if(CFG.GROOM_FAMILY && CFG.BRIDE_FAMILY){
-    f.innerHTML='تتشرف أسرة<br><b>'+esc(CFG.GROOM_FAMILY)+'</b><br>وأسرة<br><b>'+esc(CFG.BRIDE_FAMILY)+'</b><br>بدعوتكم لحضور حفل زفاف نجليهما';
+    f.innerHTML='تتشرف أسرة<br><b>'+esc(CFG.GROOM_FAMILY)+'</b>'+(CFG.GROOM_FAMILY_2?'<br><b>'+esc(CFG.GROOM_FAMILY_2)+'</b>':'')+'<br>وأسرة<br><b>'+esc(CFG.BRIDE_FAMILY)+'</b><br>بدعوتكم لحضور حفل زفاف نجليهما';
   } else {
     f.innerHTML='تتشرف العائلتان الكريمتان<br>بدعوتكم لمشاركتهما فرحة حفل زفاف';
   }
