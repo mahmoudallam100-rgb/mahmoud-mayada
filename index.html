@@ -673,8 +673,8 @@ var CFG = {
   VIDEO_ID: '1ukUVRB8XyQR2FRTgyrEnVZF-T-hki6fp',
   SONG_ID:  '1BUYKM3F3v9U6MUnILAKu1YRM5zDGC9m-',
   // ارفع الملفين دول جنب index.html على GitHub بنفس الاسم بالظبط
-  SONG_FILE:  'song.mp3',
-  VIDEO_FILE: 'video.mp4',
+  SONG_FILES:  ['1.mp3','song.mp3'],   // الأغنية = 1.mp3
+  VIDEO_FILES: ['2.mp4','video.mp4'],  // الفيديو = 2.mp4
   // لينك الـ Web app — بيُستخدم لما الدعوة تتفتح من GitHub (برّه Apps Script)
   API_URL: 'https://script.google.com/macros/s/AKfycbzMRU0yHv0ylP-e7r3A5Qi8mZE53NIYSy1ygm319TxdLhGso34R5EXa3XeesxdwWxeg/exec',
   INTRO_SECONDS: 5,
@@ -707,11 +707,16 @@ function viaScript(id){
 }
 // الأفضل: الملف مرفوع جنب index.html على GitHub (سريع ويشتغل على كل الموبايلات)
 // لو مش موجود: نجرب Drive، وبعدها Apps Script
-function attachLocalFirst(el,localUrl,id,timeoutMs){
-  return fetch(localUrl,{method:'HEAD',cache:'no-store'}).then(function(r){
-    if(!r.ok) throw 0;
-    el.src=localUrl; el.load(); return true;
-  }).catch(function(){ return attachMedia(el,id,timeoutMs); });
+function attachLocalFirst(el,names,id,timeoutMs){
+  var i=0;
+  function next(){
+    if(i>=names.length) return attachMedia(el,id,timeoutMs);
+    var u=names[i++];
+    return fetch(u,{method:'HEAD',cache:'no-store'}).then(function(r){
+      if(!r.ok) throw 0; el.src=u; el.load(); return true;
+    }).catch(next);
+  }
+  return next();
 }
 function attachMedia(el,id,timeoutMs){
   return new Promise(function(resolve){
@@ -769,8 +774,8 @@ addEventListener('pointerdown',function(e){Dust.burst(e.clientX,e.clientY,18)},{
 /* ======================== MEDIA PRELOAD ======================== */
 var vid=$('#vid'), song=$('#song'), vLayer=$('#vLayer');
 var videoReady=false;
-attachLocalFirst(vid,CFG.VIDEO_FILE,CFG.VIDEO_ID,9000).then(function(ok){videoReady=ok; if(!ok) vLayer.classList.add('novideo');});
-attachLocalFirst(song,CFG.SONG_FILE,CFG.SONG_ID,8000);
+attachLocalFirst(vid,CFG.VIDEO_FILES,CFG.VIDEO_ID,9000).then(function(ok){videoReady=ok; if(!ok) vLayer.classList.add('novideo');});
+attachLocalFirst(song,CFG.SONG_FILES,CFG.SONG_ID,8000);
 
 /* ======================== GATE → INTRO ======================== */
 var opened=false;
@@ -811,6 +816,13 @@ function startSong(){
     if(song.readyState>=2) song.play().then(function(){m.classList.remove('off')}).catch(function(){});
   },1000);
 }
+function kickSong(){
+  if(!opened) return;
+  var m=$('#music'); if(m.classList.contains('userOff')||!song.paused) return;
+  if(song.volume<.5) song.volume=.85;
+  var p=song.play(); if(p&&p.then) p.then(function(){m.classList.remove('off')}).catch(function(){});
+}
+['pointerup','touchend','click','keydown'].forEach(function(ev){ document.addEventListener(ev,kickSong,{passive:true}); });
 function playVideo(){
   try{vid.currentTime=0}catch(e){}
   var p=vid.play(); if(p&&p.catch) p.catch(function(){});
